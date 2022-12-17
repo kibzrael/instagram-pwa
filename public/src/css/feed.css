@@ -33,3 +33,11 @@
 .shared-moment-card.mdl-card {
   margin: 10px auto;
 }
+
+.save-button {
+  background-color: blueviolet;
+  color: white;
+  padding: 0.25rem 0.5rem;
+  margin-left: 1rem;
+  border: none;
+}
