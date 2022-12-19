@@ -1,4 +1,7 @@
-let staticCache = "static-v1";
+importScripts("/src/js/idb.js");
+importScripts("/src/js/utility.js");
+
+let staticCache = "static-v3";
 let dynamicCache = "dynamic";
 let staticFiles = [
   "/",
@@ -58,17 +61,27 @@ function isInArray(string, array) {
 }
 
 self.addEventListener("fetch", (e) => {
-  // let url = "https://pwagram-4199d-default-rtdb.firebaseio.com/posts.json";
+  let url = "https://pwagram-4199d-default-rtdb.firebaseio.com/posts.json";
   if (e.request.url.indexOf(url) > -1) {
     // Cache then Network
     e.respondWith(
-      caches.open(dynamicCache).then((cache) => {
-        return fetch(e.request).then((res) => {
-          //   trimCache(dynamicCache, 5);
-          cache.put(e.request, res.clone());
+      fetch(e.request)
+        .then((res) => {
+          let posts = res.clone();
+          clearAllData("posts")
+            .then(() => {
+              return posts.json();
+            })
+            .then((data) => {
+              for (let key in data) {
+                writeData("posts", data[key]);
+              }
+            });
           return res;
-        });
-      })
+        })
+        .catch((error) => {
+          return null;
+        })
     );
   } else if (isInArray(e.request.url, staticFiles)) {
     // cache only

@@ -4,11 +4,15 @@ var closeCreatePostModalButton = document.querySelector(
   "#close-create-post-modal-btn"
 );
 var sharedMomentsArea = document.querySelector("#shared-moments");
+var postForm = document.querySelector("#form");
 
 let url = "https://pwagram-4199d-default-rtdb.firebaseio.com/posts.json";
 
 function openCreatePostModal() {
   createPostArea.style.display = "block";
+  setTimeout(() => {
+    createPostArea.style.transform = "translateY(0)";
+  }, 1);
   if (deferredPrompt) {
     deferredPrompt.prompt();
     deferredPrompt.userChoice.then((result) => {
@@ -32,7 +36,10 @@ function openCreatePostModal() {
 }
 
 function closeCreatePostModal() {
-  createPostArea.style.display = "none";
+  createPostArea.style.transform = "translateY(100vh)";
+  // setTimeout(() => {
+  //   createPostArea.style.display = "none";
+  // }, 1);
 }
 
 shareImageButton.addEventListener("click", openCreatePostModal);
@@ -90,30 +97,61 @@ function updateUI(data) {
 
 let networkData = false;
 
-fetch(url)
-  .then(function (res) {
-    console.log(res);
-    return res.json();
-  })
-  .catch((e) => {})
-  .then((data) => {
-    console.log(data);
-    if (data) {
-      networkData = true;
-      clearCards();
-      updateUI(data);
-    }
-  });
-
-if ("caches" in window) {
-  caches
-    .match(url)
-    .then((response) => {
-      if (response) {
-        return response.json();
-      }
+function fetchData() {
+  fetch(url)
+    .then(function (res) {
+      console.log(res);
+      return res.json();
     })
+    .catch((e) => {})
     .then((data) => {
-      if (!networkData) createCard();
+      console.log(data);
+      if (data) {
+        networkData = true;
+        clearCards();
+        updateUI(data);
+      }
     });
 }
+fetchData();
+
+if ("indexedDB" in window) {
+  readAllData("posts").then((data) => {
+    if (!networkData) updateUI(data);
+  });
+}
+
+postForm.addEventListener("submit", (e) => {
+  e.preventDefault();
+  let title = postForm["title"].value.trim();
+  let location = postForm["location"].value.trim();
+  if ([title, location].includes("")) return;
+  closeCreatePostModal();
+  let post = {
+    id: new Date().toISOString(),
+    title: title,
+    location: location,
+  };
+  if ("serviceWorker" in window && "SyncManager" in window) {
+    navigator.serviceWorker.ready.then((sw) => {
+      console.log("Post:", post);
+      writeData("sync-post", post)
+        .then(() => {
+          return sw.sync.register("create-post");
+        })
+        .then(() => {
+          let snackbar = document.querySelector("#confirmation-toast");
+          snackbar.MaterialSnackbar.showSnackbar({
+            message: "Your Post has been shared",
+          });
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    });
+  } else {
+    createPost(post).then(() => {
+      fetchData();
+    });
+  }
+});
