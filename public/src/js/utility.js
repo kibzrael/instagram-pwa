@@ -2,10 +2,23 @@ let dbPromise = idb.open("posts-store", 1, (db) => {
   if (!db.objectStoreNames.contains("posts")) {
     db.createObjectStore("posts", { keyPath: "id" });
   }
-  if (!db.objectStoreNames.contains("sync-post")) {
-    db.createObjectStore("sync-post", { keyPath: "id" });
+  if (!db.objectStoreNames.contains("sync-posts")) {
+    db.createObjectStore("sync-posts", { keyPath: "id" });
   }
 });
+
+function createPost(data) {
+  return fetch("https://pwagram-4199d-default-rtdb.firebaseio.com/posts.json", {
+    method: "POST",
+    body: JSON.stringify(data),
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+  }).catch((error) => {
+    console.log(error);
+  });
+}
 
 function writeData(st, data) {
   return dbPromise.then((db) => {
@@ -40,19 +53,4 @@ function deleteDataItem(st, id) {
     store.delete(id);
     return transaction.complete;
   });
-}
-
-async function createPost(data) {
-  let response = await fetch(
-    "https://pwagram-4199d-default-rtdb.firebaseio.com/posts.json",
-    {
-      method: "POST",
-      body: JSON.stringify(data),
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-    }
-  );
-  console.log("Shared Post", response);
 }

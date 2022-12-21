@@ -37,9 +37,28 @@ function openCreatePostModal() {
 
 function closeCreatePostModal() {
   createPostArea.style.transform = "translateY(100vh)";
-  // setTimeout(() => {
-  //   createPostArea.style.display = "none";
-  // }, 1);
+  navigator.serviceWorker.ready.then((sw) => {
+    sw.showNotification("Succesfully Created a post.", {
+      body: "The post will be shared with other users of the app.",
+      icon: "/src/images/icons/app-icon-96x96.png",
+      badge: "/src/images/icons/app-icon-96x96.png",
+      image: "/src/images/sf-boat.jpg",
+      tag: "Confirm Notification",
+      renotify: true,
+      actions: [
+        {
+          action: "confirm",
+          title: "Okay",
+          icon: "/src/images/icons/app-icon-96x96.png",
+        },
+        {
+          action: "cancel",
+          title: "Cancel",
+          icon: "/src/images/icons/app-icon-96x96.png",
+        },
+      ],
+    });
+  });
 }
 
 shareImageButton.addEventListener("click", openCreatePostModal);
@@ -88,9 +107,9 @@ function createCard(data) {
 }
 
 function updateUI(data) {
-  for (let i = 0; i < data.length; i++) {
-    if (data[i]) {
-      createCard(data[i]);
+  for (key in data) {
+    if (data[key]) {
+      createCard(data[key]);
     }
   }
 }
@@ -131,11 +150,13 @@ postForm.addEventListener("submit", (e) => {
     id: new Date().toISOString(),
     title: title,
     location: location,
+    image:
+      "https://firebasestorage.googleapis.com/v0/b/pwagram-4199d.appspot.com/o/sf-boat.jpg?alt=media&token=d78ca2b8-d17a-4d6a-b442-da6e441d31a2",
   };
-  if ("serviceWorker" in window && "SyncManager" in window) {
+  if ("serviceWorker" in navigator && "SyncManager" in window) {
     navigator.serviceWorker.ready.then((sw) => {
       console.log("Post:", post);
-      writeData("sync-post", post)
+      writeData("sync-posts", post)
         .then(() => {
           return sw.sync.register("create-post");
         })

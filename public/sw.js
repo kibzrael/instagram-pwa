@@ -1,7 +1,7 @@
 importScripts("/src/js/idb.js");
 importScripts("/src/js/utility.js");
 
-let staticCache = "static-v3";
+let staticCache = "static-v8";
 let dynamicCache = "dynamic";
 let staticFiles = [
   "/",
@@ -106,5 +106,69 @@ self.addEventListener("fetch", (e) => {
         }
       })
     );
+  }
+});
+
+self.addEventListener("sync", (e) => {
+  console.log("Syncing...", e);
+
+  if (e.tag == "create-post") {
+    console.log("Syncing Posts");
+    e.waitUntil(
+      readAllData("sync-posts").then((data) => {
+        for (let post of data) {
+          createPost(post).then((res) => {
+            console.log("Shared Post", res);
+            if (res.ok) {
+              deleteDataItem("sync-posts", post.id);
+            }
+          });
+        }
+      })
+    );
+  }
+});
+
+self.addEventListener("notificationclick", (e) => {
+  let notification = e.notification;
+  let action = e.action;
+  console.log(notification);
+  if (action == "confirm") {
+    console.log(action);
+  } else {
+    console.log(action);
+  }
+  e.waitUntil(
+    clients.matchAll().then((cls) => {
+      let client = cls.find((c) => c.visibilityState === "visible");
+      if (client) {
+        client.navigate("/help");
+        client.focus();
+      } else {
+        clients.openWindow("/help");
+      }
+    })
+  );
+  notification.close();
+});
+
+self.addEventListener("notificationclose", (e) => {
+  console.log("Closed: ", e);
+});
+
+self.addEventListener("push", (e) => {
+  let data;
+  if (e.data) {
+    data = Json.parse(e.data.text());
+    let options = {
+      body: data.content,
+      icon: "/src/images/icons/app-icon-96x96.png",
+      badge: "/src/images/icons/app-icon-96x96.png",
+      image: "/src/images/sf-boat.jpg",
+      data: {
+        url: "/",
+      },
+    };
+    e.waitUntil(self.registration.showNotification(data.title, options));
   }
 });
