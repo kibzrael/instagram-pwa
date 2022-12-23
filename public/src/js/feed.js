@@ -5,13 +5,73 @@ var closeCreatePostModalButton = document.querySelector(
 );
 var sharedMomentsArea = document.querySelector("#shared-moments");
 var postForm = document.querySelector("#form");
+var videoPlayer = document.querySelector("#player");
+var canvas = document.querySelector("#canvas");
+var captureButton = document.querySelector("#capture-btn");
+var locationButton = document.querySelector("#location-btn");
+var locationLoader = document.querySelector("#location-loader");
 
 let url = "https://pwagram-4199d-default-rtdb.firebaseio.com/posts.json";
 
+function initializeMedia() {
+  // Polyfills
+  if (!("mediaDevices" in navigator)) {
+    navigator.mediaDevices = {};
+  }
+  if (!("getUserMedia" in navigator.mediaDevices)) {
+    navigator.mediaDevices.getUserMedia = function (constraints) {
+      let getUserMedia =
+        navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+      if (!getUserMedia) {
+        return Promise.reject(new Error("getUserMedia is not implemented"));
+      }
+      return new Promise((resolve, reject) => {
+        getUserMedia.call(navigator, constraints, resolve, reject);
+      });
+    };
+  }
+
+  navigator.mediaDevices
+    .getUserMedia({ video: true })
+    .then((stream) => {
+      videoPlayer.srcObject = stream;
+      videoPlayer.style.display = "block";
+    })
+    .catch((error) => {
+      captureButton.style.display = "none";
+    });
+}
+
+captureButton.addEventListener("click", (event) => {
+  videoPlayer.style.display = "none";
+  canvas.style.display = "block";
+  captureButton.style.display = "none";
+  let context = canvas.getContext("2d");
+  context.drawImage(
+    videoPlayer,
+    0,
+    0,
+    canvas.width,
+    videoPlayer.videoHeight / (videoPlayer.videoWidth / canvas.width)
+  );
+  stopVideo();
+  let picture = dataURItoBlob(canvas.toDataURL());
+});
+
+function stopVideo() {
+  videoPlayer.srcObject.getVideoTracks().forEach((track) => {
+    track.stop();
+  });
+}
+
 function openCreatePostModal() {
   createPostArea.style.display = "block";
+  captureButton.style.display = "initial";
+  videoPlayer.style.display = "none";
+  canvas.style.display = "none";
   setTimeout(() => {
     createPostArea.style.transform = "translateY(0)";
+    initializeMedia();
   }, 1);
   if (deferredPrompt) {
     deferredPrompt.prompt();
@@ -36,6 +96,7 @@ function openCreatePostModal() {
 }
 
 function closeCreatePostModal() {
+  stopVideo();
   createPostArea.style.transform = "translateY(100vh)";
   navigator.serviceWorker.ready.then((sw) => {
     sw.showNotification("Succesfully Created a post.", {

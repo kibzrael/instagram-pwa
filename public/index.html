@@ -78,6 +78,7 @@
               <canvas id="canvas" width="320px" height="240px"></canvas>
               <button
                 class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored mdl-color--accent"
+                style="margin: 1rem"
                 type="button"
                 id="capture-btn">
                 Capture
@@ -121,7 +122,9 @@
                   id="location-btn">
                   Get Location
                 </button>
-                <div class="mdl-spinner mdl-js-spinner is-active"></div>
+                <div
+                  id="location-loader"
+                  class="mdl-spinner mdl-js-spinner is-active"></div>
               </div>
               <br />
               <div>

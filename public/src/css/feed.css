@@ -13,6 +13,18 @@
   transition: transform 300ms;
 }
 
+#create-post video,
+#create-post canvas {
+  width: 512px;
+  max-width: 100%;
+  display: none;
+  margin: auto;
+}
+
+#location-loader {
+  display: none;
+}
+
 .main-image {
   max-width: 100%;
   margin: auto;
