@@ -8,6 +8,7 @@ var postForm = document.querySelector("#form");
 var videoPlayer = document.querySelector("#player");
 var canvas = document.querySelector("#canvas");
 var captureButton = document.querySelector("#capture-btn");
+var locationInput = document.querySelector("#location");
 var locationButton = document.querySelector("#location-btn");
 var locationLoader = document.querySelector("#location-loader");
 
@@ -58,6 +59,31 @@ captureButton.addEventListener("click", (event) => {
   let picture = dataURItoBlob(canvas.toDataURL());
 });
 
+locationButton.addEventListener("click", (event) => {
+  locationButton.style.display = "none";
+  locationLoader.style.display = "initial";
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      locationButton.style.display = "initial";
+      locationLoader.style.display = "none";
+      let location = position.coords.latitude;
+      //TODO: use google's geolocation API
+      locationInput.value = "In Nairobi";
+    },
+    (error) => {
+      locationButton.style.display = "initial";
+      locationLoader.style.display = "none";
+    },
+    { timeout: 7000 }
+  );
+});
+
+function initializeLocation() {
+  if (!("geolocation" in navigator)) {
+    locationButton.style.display = "none";
+  }
+}
+
 function stopVideo() {
   videoPlayer.srcObject.getVideoTracks().forEach((track) => {
     track.stop();
@@ -71,6 +97,7 @@ function openCreatePostModal() {
   canvas.style.display = "none";
   setTimeout(() => {
     createPostArea.style.transform = "translateY(0)";
+    initializeLocation();
     initializeMedia();
   }, 1);
   if (deferredPrompt) {

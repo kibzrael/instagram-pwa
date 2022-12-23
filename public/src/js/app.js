@@ -25,8 +25,8 @@ function configurePushSub() {
       if (sub == null) {
         // Create new subscription
         swReg.pushManager.subscribe({
-          userVisibleOnly:true,
-        })
+          userVisibleOnly: true,
+        });
       } else {
         //
       }

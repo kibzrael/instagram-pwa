@@ -2,10 +2,9 @@
   "name": "pwa-complete-guide",
   "version": "1.0.0",
   "description": "A complete guide to PWAs. Building a simple Instagram clone.",
-  "main": "index.js",
-  "type": "module",
   "scripts": {
-    "start": "http-server -c-1"
+    "start": "http-server -c-1",
+    "generateSW": "npx workbox-cli injectManifest  ./workbox-config.cjs"
   },
   "keywords": [
     "pwa",
@@ -19,6 +18,8 @@
   "license": "ISC",
   "dependencies": {
     "firebase": "^9.15.0",
-    "http-server": "^14.1.1"
+    "http-server": "^14.1.1",
+    "workbox-cli": "^6.5.4",
+    "workbox-precaching": "^6.5.4"
   }
 }
